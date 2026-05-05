@@ -1,0 +1,7 @@
+keys.py
+build
+docx.md
+output.txt
+__pycache__
+*.egg-info
+venv
