@@ -13,12 +13,6 @@ The Identity Core defines the fundamental nature of the character.
 
 ## Features still worked on
 
-
-
-### Generation
-
-Working on the implementation of the Generation of output with OpenRouter and Ollama.
-
 ### Memory
 
 The memories and contexts are stored in an SQL database.\

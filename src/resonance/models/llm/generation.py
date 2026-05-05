@@ -4,11 +4,12 @@ import base64
 from .prompt_builder import format_identity_prompt, format_state_prompt, sentence_to_tag, memories_format
 from .memory import get_memories_w_tags
 from .context import get_context
+from tools import jsontools
 from apis import keys
 
 context = get_context()
 
-def generate_ai_output(prompt: str, identity: dict, state: dict) -> str:
+def generate_ai_output(prompt: str, identity: dict, state: dict):
     tags = sentence_to_tag(prompt)
     memories = get_memories_w_tags(tags)
 
@@ -16,7 +17,18 @@ def generate_ai_output(prompt: str, identity: dict, state: dict) -> str:
     preprompt += format_state_prompt(state)
     preprompt += memories_format(memories)
     print(preprompt)
-    return ""
+
+    context.append({"role": "user", "content": prompt})
+
+    ai_output = generate_openrouter(context)
+
+    context.append({"role": "assistant", "content": ai_output})
+
+    ai_json = jsontools.to_json(ai_output)
+    if ai_json != json.loads("{}"):
+        return ai_json
+
+    return ai_output
 
 
 def generate_openrouter(context: list) -> str:
