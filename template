@@ -1,0 +1,37 @@
+GENERATION LAYER:
+Provider
+Model
+Context
+
+PERCEPTION LAYER:
+Provider
+Model
+Context
+
+DECISION LAYER:
+Provider
+Model
+Context
+
+
+
+
+
+
+
+
+User
+Identity Core
+Perception layer (Optional)
+Memory Layer (Optional)
+Internal State (Optinal)
+Decision Layer (Optional)
+AI Response
+Reflection Layer (Optional)
+
+
+Order to work on:
+1. Internal State system (mood, affection, etc.)
+2. Perception layer (intent + emotion classification)
+3. Decision layer (goal selection)
+4. Memory categorization (episodic, semantic, emotional, relationship)

@@ -1,4 +1,4 @@
-def format_identity_prompt(identity: dict) -> str:
+def identity_format_prompt(identity: dict) -> str:
     system = ""
 
     if not identity["name"] or not identity["description"] or not identity["personality"]:
@@ -53,7 +53,7 @@ def format_identity_prompt(identity: dict) -> str:
     return system
 
 
-def format_state_prompt(state: dict) -> str:
+def state_format_prompt(state: dict) -> str:
     preprompt = ""
 
     if state["mood"]:
@@ -86,7 +86,7 @@ def memories_format(memories: list) -> str:
     return ""
 
 
-def sentence_to_tag(sentence: str) -> list:
+def memories_sentence_to_tags(sentence: str) -> list:
     words = sentence.replace('\n', ' ').split(' ')
     cleaned = [word.strip('.,!?;:~–-+[]()|@#$%^&*`<>').lower() for word in words]
 

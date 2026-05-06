@@ -1,26 +1,77 @@
+import ollama
 import requests
 import json
 import base64
-from .prompt_builder import format_identity_prompt, format_state_prompt, sentence_to_tag, memories_format
+from .prompt_builder import identity_format_prompt, state_format_prompt, memories_sentence_to_tags, memories_format
 from .memory import get_memories_w_tags
 from .context import get_context
-from tools import jsontools
-from apis import keys
+from ...tools import jsontools
+from ...apis import keys
 
 context = get_context()
+openrouter_model = "z-ai/glm-5.1"
+ollama_model = "mistral-nemo"
 
-def generate_ai_output(prompt: str, identity: dict, state: dict):
-    tags = sentence_to_tag(prompt)
+def correct_llm_settings(settings={"provider":"", "model":""}):
+    if not settings.get("provider"):
+        error = "\x1b[31mMissing a provider.\x1b[0m"
+        print(error)
+        return False
+
+    if not settings.get("model"):
+        error = "\x1b[31mMissing a model.\x1b[0m"
+        print(error)
+        return False
+
+    return True
+
+
+def generate_llm_output(context: list, settings={"provider":"", "model":""}) -> str:
+
+    if not correct_llm_settings(settings):
+        error="""
+        \x1b[31mERROR ON LLM GENERATION LAYER!
+        The setting(s) set for generating LLM output is/are incorrect!\x1b[0m
+        """
+
+
+    match settings['provider']:
+        case "openrouter":
+            ai_output = generate_openrouter(context, openrouter_model)
+        case "ollama":
+            ai_output = generate_ollama(context, ollama_model)
+
+        case "":
+            error = "\x1b[31mPlease reference a provider!\x1b[0m"
+            print(error)
+            return error
+        case _:
+            error = f"\x1b[31mNo such provider \"{settings['provider']}\" is available\x1b[0m"
+            print(error)
+            return error
+
+    return ai_output
+            
+
+
+
+def generate_ai_response(prompt: str, identity: dict, state: dict, settings={"provider": "", "model": ""}):
+    tags = memories_sentence_to_tags(prompt)
     memories = get_memories_w_tags(tags)
 
-    preprompt = format_identity_prompt(identity)
-    preprompt += format_state_prompt(state)
+    preprompt = identity_format_prompt(identity)
+    preprompt += state_format_prompt(state)
     preprompt += memories_format(memories)
     print(preprompt)
 
     context.append({"role": "user", "content": prompt})
 
-    ai_output = generate_openrouter(context)
+    if layers := settings.get("layers"):
+        for layer in layers:
+#            match layer.get("perception"):
+            pass
+
+    ai_output = generate_llm_output(context, settings)
 
     context.append({"role": "assistant", "content": ai_output})
 
@@ -31,12 +82,12 @@ def generate_ai_output(prompt: str, identity: dict, state: dict):
     return ai_output
 
 
-def generate_openrouter(context: list) -> str:
+def generate_openrouter(context: list, model) -> str:
     key = keys.openrouter_api
     #model = "anthropic/claude-opus-4.6"
     #model = "x-ai/grok-4.20"
     #model = "anthropic/claude-3.5-haiku"
-    model = "z-ai/glm-5.1"
+    #model = "z-ai/glm-5.1"
     #model = "z-ai/glm-4.6"
     url = 'https://openrouter.ai/api/v1/chat/completions'
 
@@ -94,20 +145,36 @@ def generate_openrouter(context: list) -> str:
     return result 
 
 
-def generate_ollama(context):
-    url = "http://localhost:11434/api/chat"
+def generate_ollama(context, model):
+    stream = chat(
+        model='llama3.1:8b',
+        messages=[{'role': 'user', 'content': 'What is 17 × 23?'}],
+        stream=True,
+    )
 
-    data = {
-            "model":"mistral-nemo",
-            "messages": context,
-            "stream": False
-            }
+    in_thinking = False
+    content = ''
+    thinking = ''
+    for chunk in stream:
+        if chunk.message.thinking:
+            if not in_thinking:
+                in_thinking = True
+                print('Thinking:\n', end='', flush=True)
+            print(chunk.message.thinking, end='', flush=True)
+            # accumulate the partial thinking 
+            thinking += chunk.message.thinking
+        elif chunk.message.content:
+            if in_thinking:
+                in_thinking = False
+                print('\n\nAnswer:\n', end='', flush=True)
+            print(chunk.message.content, end='', flush=True)
+            # accumulate the partial content
+            content += chunk.message.content
 
-    response = requests.post(url, data=json.dumps(data))
-    raw = json.loads(response.content)
-    ai_response = raw['message']['content']
+        # append the accumulated fields to the messages for the next request
+        new_messages = [{ 'role': 'assistant', 'thinking': thinking, 'content': content }]
 
-    return ai_response
+    return content
 
 
 def encode_image(url: str) -> str:
@@ -162,3 +229,6 @@ def send_to_llava(image_url: str):
         ai_response = ""
     return ai_response
 
+
+def get_memories() -> list:
+    return []
