@@ -13,11 +13,8 @@ def to_json(string: str) -> json.JSONEncoder:
         return result
 
     except json.JSONDecodeError as e:
-        print("\x1b[31m\"to_json\": Content not JSON!")
-        print(string)
+        print("\n\x1b[31m\"to_json\": Content not JSON!")
+        print(e)
         print("\x1b[0m")
-        print(e)
-    except Exception as e:
-        print(e)
 
     return json.loads("{}")

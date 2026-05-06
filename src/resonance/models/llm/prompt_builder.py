@@ -1,54 +1,55 @@
 def identity_format_prompt(identity: dict) -> str:
     system = ""
 
-    if not identity["name"] or not identity["description"] or not identity["personality"]:
-        print("\x1b[31mPlease provide a Name, a Description and a Personality for the AI.")
+    if not identity["name"] or not identity["personality"]:
+        print("\x1b[31mPlease provide a Name and a Personality for the AI.\x1b[0m")
         return ""
 
     system += f"""
-    # Your Identity
-    You are {identity["name"]}
-    {identity["description"]}
+# Your Identity
+You are {identity["name"]}
+{identity["description"]}
 
-    # Personality
-    {identity["personality"]}
-    """
+# Personality
+{identity["personality"]}
+"""
     
-    if identity["traits"]:
+    if identity.get("traits"):
         system += f"""
-        # Personality Traits
-        - {", ".join(identity['traits'])}
-        """
+# Personality Traits
+- {", ".join(identity['traits'])}
+"""
 
-    if identity["speech_style"]:
+    if identity.get("speech_style"):
         system += f"""
-        # Speech style
-        - {identity['speech_style']}
-        """
+# Speech style
+- {identity['speech_style']}
+"""
 
-    if identity["values"]:
+    if identity.get("values"):
         system += f"""
-        # Core Values
-        - {", ".join(identity['values'])}
-        """
+# Core Values
+- {", ".join(identity['values'])}
+"""
 
-    if identity["rules"]:
+    if identity.get("rules"):
         system += f"""
-        # You must follow these rules:
-        - {", ".join(identity['boundaries'])}
-        """
+# You must follow these rules:
+- {", ".join(identity['rules'])}
+"""
 
-    for oinfo in identity["other_info"]:
-        system += f"""
-        # {oinfo["title"]}
-        {oinfo["content"]}
-        """
+    if other_info := identity.get("other_info"):
+        for oinfo in other_info:
+            system += f"""
+# {oinfo["title"]}
+{oinfo["content"]}
+"""
 
-    if identity["output_rules"]:
+    if identity.get("output_rules"):
         system += f"""
-        # Output Rules
-        {identity["output_rules"]}
-        """
+# Output Rules
+{identity["output_rules"]}
+"""
 
     return system
 
@@ -58,18 +59,18 @@ def state_format_prompt(state: dict) -> str:
 
     if state["mood"]:
         preprompt += f"""
-        # Mood
-        The following moods define how you feel, use them as reference when generating your output:
-        - {", ".join(state["mood"])}
-        """
+# Mood
+The following moods define how you feel, use them as reference when generating your output:
+- {", ".join(state["mood"])}
+"""
 
     for oinfo in state["other_info"]:
         preprompt += f"""
-        # {oinfo["title"]}
-        {oinfo["content"]}
-        """
+# {oinfo["title"]}
+{oinfo["content"]}
+"""
 
-    return preprompt
+    return preprompt+"\n"
 
 
 

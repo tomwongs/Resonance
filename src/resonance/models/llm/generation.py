@@ -2,6 +2,7 @@ from ollama import chat
 import requests
 import json
 import base64
+from .layers import perception
 from .prompt_builder import identity_format_prompt, state_format_prompt, memories_sentence_to_tags, memories_format
 from .memory import get_memories_w_tags
 from .context import get_context
@@ -12,7 +13,7 @@ context = get_context()
 openrouter_model = "z-ai/glm-5.1"
 ollama_model = "mistral-nemo"
 
-def correct_llm_settings(settings={"provider":"", "model":""}):
+def is_correct_llm_settings(settings={"provider":"", "model":""}):
     if not settings.get("provider"):
         error = "\x1b[31mMissing a provider.\x1b[0m"
         print(error)
@@ -28,11 +29,11 @@ def correct_llm_settings(settings={"provider":"", "model":""}):
 
 def generate_llm_output(context: list, settings={"provider":"", "model":""}) -> str:
 
-    if not correct_llm_settings(settings):
+    if not is_correct_llm_settings(settings):
         error="""
-        \x1b[31mERROR ON LLM GENERATION LAYER!
-        The setting(s) set for generating LLM output is/are incorrect!\x1b[0m
-        """
+\x1b[31mERROR ON LLM GENERATION LAYER!
+The setting(s) set for generating LLM output is/are incorrect!\x1b[0m
+"""
 
 
     match settings['provider']:
@@ -62,14 +63,25 @@ def generate_ai_response(prompt: str, identity: dict, state: dict, settings={"pr
     preprompt = identity_format_prompt(identity)
     preprompt += state_format_prompt(state)
     preprompt += memories_format(memories)
-    print(preprompt)
 
-    context.append({"role": "user", "content": prompt})
 
     if layers := settings.get("layers"):
+
         for layer in layers:
-#            match layer.get("perception"):
-            pass
+
+            if perception_settings := layer.get("perception"):
+                if not is_correct_llm_settings(perception_settings):
+                    error = "\x1b[31mIncorrect settings for Perception Layer!\x1b[0m"
+                    print(error)
+                    return error
+
+                preprompt += perception.generate_layer(prompt, perception_settings)
+                     
+            
+
+    baked_prompt = preprompt + "\n" + prompt
+    context.append({"role": "user", "content": baked_prompt})
+    print(baked_prompt)
 
     ai_output = generate_llm_output(context, settings)
 
