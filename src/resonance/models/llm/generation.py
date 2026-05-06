@@ -1,4 +1,4 @@
-import ollama
+from ollama import chat
 import requests
 import json
 import base64
@@ -147,8 +147,8 @@ def generate_openrouter(context: list, model) -> str:
 
 def generate_ollama(context, model):
     stream = chat(
-        model='llama3.1:8b',
-        messages=[{'role': 'user', 'content': 'What is 17 × 23?'}],
+        model=model,
+        messages=context,
         stream=True,
     )
 
