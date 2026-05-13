@@ -3,15 +3,14 @@ from .tools import generate_llm_output
 from ..layers.perception import generate_layer as perception_generate_layer
 from ..prompt_builder import persona_format_prompt, state_format_prompt, memories_sentence_to_tags, memories_format, output_format_prompt, is_correct_llm_data
 from ..memory import get_memories_w_tags
-from ..context.main import get_context
 from ....tools import jsontools
 
-context = get_context()
 
 
-def generate_ai_response(prompt: str, data: dict):
+def generate_ai_response(context: list, data: dict):
 
     preprompt = ""
+    prompt = context[-1]["content"]
 
     if layers := data.get("layers"):
 
@@ -39,7 +38,7 @@ def generate_ai_response(prompt: str, data: dict):
 
 
             if layer.get("thoughts"):
-                preprompt += output_format_prompt({"thoughts": "Your current thoughts, without line breaks.", "thinking_process": "How you plan on reacting based on all the data you've been given.", "decisions": "A plan of what to do and respond.\n1. Beginning.\n2. Next step...\n3. Finally.", "output": "Message you want to output.\nWith multiple lines."})
+                preprompt += output_format_prompt({"thoughts": "Your current thoughts, embracing your personality and state, without line breaks.", "thinking_process": "How you plan on reacting based on your personality, your state and your data. Without line breaks", "decisions": "The decisions you're taking and reflecting in your output. Without line breaks", "output": "Message you want to output.\nWith multiple lines if needed."})
 
 
     baked_prompt = preprompt + "\n" + prompt
