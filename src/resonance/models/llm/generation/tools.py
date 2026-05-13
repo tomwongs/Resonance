@@ -1,97 +1,10 @@
 from ollama import chat
 import requests
-import json
 import base64
-from .layers import perception
-from .prompt_builder import identity_format_prompt, state_format_prompt, memories_sentence_to_tags, memories_format
-from .memory import get_memories_w_tags
-from .context import get_context
-from ...tools import jsontools
-from ...apis import keys
+import json
 
-context = get_context()
-openrouter_model = "z-ai/glm-5.1"
-ollama_model = "mistral-nemo"
-
-def is_correct_llm_settings(settings={"provider":"", "model":""}):
-    if not settings.get("provider"):
-        error = "\x1b[31mMissing a provider.\x1b[0m"
-        print(error)
-        return False
-
-    if not settings.get("model"):
-        error = "\x1b[31mMissing a model.\x1b[0m"
-        print(error)
-        return False
-
-    return True
-
-
-def generate_llm_output(context: list, settings={"provider":"", "model":""}) -> str:
-
-    if not is_correct_llm_settings(settings):
-        error="""
-\x1b[31mERROR ON LLM GENERATION LAYER!
-The setting(s) set for generating LLM output is/are incorrect!\x1b[0m
-"""
-
-
-    match settings['provider']:
-        case "openrouter":
-            ai_output = generate_openrouter(context, openrouter_model)
-        case "ollama":
-            ai_output = generate_ollama(context, ollama_model)
-
-        case "":
-            error = "\x1b[31mPlease reference a provider!\x1b[0m"
-            print(error)
-            return error
-        case _:
-            error = f"\x1b[31mNo such provider \"{settings['provider']}\" is available\x1b[0m"
-            print(error)
-            return error
-
-    return ai_output
-            
-
-
-
-def generate_ai_response(prompt: str, identity: dict, state: dict, settings={"provider": "", "model": ""}):
-    tags = memories_sentence_to_tags(prompt)
-    memories = get_memories_w_tags(tags)
-
-    preprompt = identity_format_prompt(identity)
-    preprompt += state_format_prompt(state)
-    preprompt += memories_format(memories)
-
-
-    if layers := settings.get("layers"):
-
-        for layer in layers:
-
-            if perception_settings := layer.get("perception"):
-                if not is_correct_llm_settings(perception_settings):
-                    error = "\x1b[31mIncorrect settings for Perception Layer!\x1b[0m"
-                    print(error)
-                    return error
-
-                preprompt += perception.generate_layer(prompt, perception_settings)
-                     
-            
-
-    baked_prompt = preprompt + "\n" + prompt
-    context.append({"role": "user", "content": baked_prompt})
-    print(baked_prompt)
-
-    ai_output = generate_llm_output(context, settings)
-
-    context.append({"role": "assistant", "content": ai_output})
-
-    ai_json = jsontools.to_json(ai_output)
-    if ai_json != json.loads("{}"):
-        return ai_json
-
-    return ai_output
+from ....apis import keys
+from ..prompt_builder import is_correct_llm_data
 
 
 def generate_openrouter(context: list, model) -> str:
@@ -241,6 +154,30 @@ def send_to_llava(image_url: str):
         ai_response = ""
     return ai_response
 
+def generate_llm_output(context: list, data={"provider":"", "model":""}) -> str:
 
-def get_memories() -> list:
-    return []
+    if not is_correct_llm_data(data):
+        error="""
+\x1b[31mERROR ON LLM GENERATION LAYER!
+The setting(s) set for generating LLM output is/are incorrect!\x1b[0m
+"""
+
+
+    match data['provider']:
+        case "openrouter":
+            ai_output = generate_openrouter(context, data["model"])
+        case "ollama":
+            ai_output = generate_ollama(context, data["model"])
+
+        case "":
+            error = "\x1b[31mPlease reference a provider!\x1b[0m"
+            print(error)
+            return error
+        case _:
+            error = f"\x1b[31mNo such provider \"{data['provider']}\" is available\x1b[0m"
+            print(error)
+            return error
+
+    return ai_output
+
+

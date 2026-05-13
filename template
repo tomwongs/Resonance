@@ -22,6 +22,7 @@ Context
 
 User
 Identity Core
+User Analysis (Optional)
 Perception layer (Optional)
 Memory Layer (Optional)
 Internal State (Optinal)

@@ -1,54 +1,75 @@
-def identity_format_prompt(identity: dict) -> str:
+import json
+
+def is_correct_llm_data(data={"provider":"", "model":""}):
+    if not data.get("provider"):
+        error = "\x1b[31mMissing a provider.\x1b[0m"
+        print(error)
+        return False
+
+    if not data.get("model"):
+        error = "\x1b[31mMissing a model.\x1b[0m"
+        print(error)
+        return False
+
+    return True
+
+def output_format_prompt(required_elements: dict):
+    preprompt = "# How your output should be structured\n"
+    preprompt += "Your output should STRICTLY ALWAYS be ONLY a JSON format with this structure, no backticks, no asterisks before or after the JSON, the following JSON structure is IMPERATIVE to respect:\n"
+    preprompt += json.dumps(required_elements)
+    return preprompt
+
+def persona_format_prompt(persona: dict) -> str:
     system = ""
 
-    if not identity["name"] or not identity["personality"]:
+    if not persona["name"] or not persona["personality"]:
         print("\x1b[31mPlease provide a Name and a Personality for the AI.\x1b[0m")
         return ""
 
     system += f"""
-# Your Identity
-You are {identity["name"]}
-{identity["description"]}
+# Your Persona
+You are {persona["name"]}
+{persona["description"]}
 
 # Personality
-{identity["personality"]}
+{persona["personality"]}
 """
     
-    if identity.get("traits"):
+    if persona.get("traits"):
         system += f"""
 # Personality Traits
-- {", ".join(identity['traits'])}
+- {", ".join(persona['traits'])}
 """
 
-    if identity.get("speech_style"):
+    if persona.get("speech_style"):
         system += f"""
 # Speech style
-- {identity['speech_style']}
+- {persona['speech_style']}
 """
 
-    if identity.get("values"):
+    if persona.get("values"):
         system += f"""
 # Core Values
-- {", ".join(identity['values'])}
+- {", ".join(persona['values'])}
 """
 
-    if identity.get("rules"):
+    if persona.get("rules"):
         system += f"""
 # You must follow these rules:
-- {", ".join(identity['rules'])}
+- {", ".join(persona['rules'])}
 """
 
-    if other_info := identity.get("other_info"):
+    if other_info := persona.get("other_info"):
         for oinfo in other_info:
             system += f"""
 # {oinfo["title"]}
 {oinfo["content"]}
 """
 
-    if identity.get("output_rules"):
+    if persona.get("output_rules"):
         system += f"""
 # Output Rules
-{identity["output_rules"]}
+{persona["output_rules"]}
 """
 
     return system
