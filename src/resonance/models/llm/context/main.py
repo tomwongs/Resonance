@@ -1,19 +1,22 @@
 import sqlite3
 import json
+from ..layers.generation.tools import date_time
+from ..prompt_builder import persona_format_prompt
 
-def get_context(date="") -> list:
+def get_context(data: dict, date="") -> list:
     try:
         if date:
-            with open(f"{date}.context") as f:
+            with open(f"context/{data['layers']['identity']['persona']['name']}/{date_time('date')}.context") as f:
                 result = f.read()
             return json.loads(result)
 
         return []
 
     except FileNotFoundError:
-        print(f"\x1b[31mThe context doesn't exist for the date: {date}\x1b[0m")
 
-    except Exception as e:
-        print(f"\x1b[31m{e}\x1b[0m")
+        print(f"\x1b[31mThe context doesn't exist for the date: {date}\x1b[0m")
+        if layers := data.get('layers'):
+            if identity_data := layers.get("identity"):
+                return [{"role": "system", "content": persona_format_prompt(identity_data["persona"])}]
 
     return []

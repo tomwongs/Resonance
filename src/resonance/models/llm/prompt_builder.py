@@ -70,7 +70,7 @@ You are {persona["name"]}
 
     if persona.get("output_rules"):
         system += f"""
-# Output Rules
+# How your output should be structured
 {persona["output_rules"]}
 """
 
