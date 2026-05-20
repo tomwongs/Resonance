@@ -1,4 +1,5 @@
 from typing import Any
+import ast
 import json
 
 def to_json(string: str) -> dict[str, Any]:
@@ -13,10 +14,10 @@ def to_json(string: str) -> dict[str, Any]:
         string = " ".join(words)
 
     try:
-        result = json.loads(string)
+        result = ast.literal_eval(string)
         return result
 
 
-    except json.JSONDecodeError as e:
+    except Exception as e:
         print("\x1b[31m",e,"\x1b[0m")
         return {"output": string}
