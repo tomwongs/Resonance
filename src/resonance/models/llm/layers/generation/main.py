@@ -1,20 +1,20 @@
 import json
 from typing import Any
 
-from .tools import generate_llm_output, date_time
+from .tools import generate_llm_output
 from ...context.main import get_context
 from ..perception.main import PerceptionLayer
 from ...prompt_builder import state_format_prompt, memories_sentence_to_tags, memories_format, is_correct_llm_data
 from ..memories.main import Memories
-from .....tools import jsontools
+from .....tools import jsontools, date
 
 
 class Generation:
 
     def __init__(self, data: dict[str, Any]):
-        self.context = get_context(data, date_time("date"))
+        self.context = get_context(data, date.date_time("date"))
         self.data = data
-        self.context_file = f"context/{data['layers']['identity']['persona']['name']}/{date_time('date')}.context"
+        self.context_file = f"context/{data['layers']['identity']['persona']['name']}/{date.date_time('date')}.context"
 
     def generate_ai_response(self, prompt: str) -> dict[str, Any]:
 

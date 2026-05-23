@@ -1,7 +1,7 @@
 import sqlite3
 import json
-from ..layers.generation.tools import date_time
 from ..prompt_builder import persona_format_prompt
+from ....tools import date_time
 
 def get_context(data: dict, date="") -> list:
     try:
