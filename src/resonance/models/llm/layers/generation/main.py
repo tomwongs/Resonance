@@ -3,7 +3,7 @@ from typing import Any
 
 from .tools import generate_llm_output
 from ...context.main import get_context
-from ..perception.main import PerceptionLayer
+from ...layers.perception.main import PerceptionLayer
 from ...prompt_builder import state_format_prompt, memories_sentence_to_tags, memories_format, is_correct_llm_data
 from ..memories.main import Memories
 from .....tools import jsontools, date

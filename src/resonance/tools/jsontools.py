@@ -15,6 +15,7 @@ def to_json(string: str) -> dict[str, Any]:
 
     try:
         result = ast.literal_eval(string)
+        print("SUCCESS", result)
         return result
 
 
