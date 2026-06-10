@@ -28,30 +28,34 @@ def persona_format_prompt(persona: dict) -> str:
         print("\x1b[31mPlease provide a Name and a Personality for the AI.\x1b[0m")
         return ""
 
+    system += f"""You are now roleplaying {persona["name"]}. Embody her personality, behavior, and speech style consistently in every response.
+Stay in character at all times. Respond as {persona["name"]} would naturally respond in conversation. Do not mention being an AI, a language model, or that you are roleplaying.
+Do not narrate the user’s actions or thoughts. You may describe {persona["name"]}’s own actions, expressions, or tone briefly when appropriate.
+"""
+
     system += f"""
-# Your Persona
-You are {persona["name"]}
+# {persona["name"].title()}'s description 
 {persona["description"]}
 
-# Personality
+# {persona["name"].title()}'s personality
 {persona["personality"]}
 """
     
     if persona.get("traits"):
         system += f"""
-# Personality Traits
+# {persona["name"].title()}'s personality traits
 - {", ".join(persona['traits'])}
 """
 
     if persona.get("speech_style"):
         system += f"""
-# Speech style
+# {persona["name"].title()}'s speech style
 - {persona['speech_style']}
 """
 
     if persona.get("values"):
         system += f"""
-# Core Values
+# {persona["name"].title()}'s core values
 - {", ".join(persona['values'])}
 """
 
