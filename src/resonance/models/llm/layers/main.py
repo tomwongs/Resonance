@@ -76,6 +76,25 @@ class Layers:
             return system
 
 
+        def state_format_prompt(self, state={}) -> str:
+            preprompt = ""
+     
+            if state.get("mood"):
+                preprompt += f"""
+# Mood
+The following moods define how you feel, use them as reference when generating your output:
+- {", ".join(state["mood"])}
+"""
+     
+            for oinfo in state.get("other_info"):
+                preprompt += f"""
+# {oinfo["title"]}
+{oinfo["content"]}
+"""
+    
+            return preprompt+"\n"
+
+
     class Generation:
         def __init__(self, data):
             self.data = data

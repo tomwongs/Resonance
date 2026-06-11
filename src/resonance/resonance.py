@@ -11,8 +11,11 @@ class Resonance:
             self.data = data
             self.ai = {"identity": Layers.Identity(data), "llm": Layers.Generation(data), "memories": Layers.Memories("memories.db")}
 
+
         def generate(self, prompt: str):
-            return self.ai["llm"].generate(prompt)
+            preprompt = self.generate_layers_preprompt(prompt)
+            nprompt = preprompt + prompt
+            return self.ai["llm"].generate(nprompt)
 
 
         def create_memories(self, day_context: str, ai_response=""):
@@ -21,11 +24,10 @@ class Resonance:
         #def fetch_memories(self, )
             
 
-        def generate_layers_preprompt(self, prompt: str):
+        def generate_layers_preprompt(self, prompt: str) -> str:
 
             preprompt = ""
             if layers := self.data.get("layers"):
-
                 if identity_data := layers.get("identity"):
                     preprompt += self.ai["identity"].state_format_prompt(identity_data["state"])
          
@@ -43,3 +45,7 @@ class Resonance:
                     tags = self.ai["memories"].memories_sentence_to_tags(prompt)
                     memories = self.ai["memories"].get_memories_w_tags(tags)
                     preprompt += self.ai["memories"].memories_format(memories)
+
+                preprompt += "\n"
+
+            return preprompt

@@ -81,20 +81,4 @@ Do not narrate the user’s actions or thoughts. You may describe {persona["name
     return system
 
 
-def state_format_prompt(state: dict) -> str:
-    preprompt = ""
 
-    if state["mood"]:
-        preprompt += f"""
-# Mood
-The following moods define how you feel, use them as reference when generating your output:
-- {", ".join(state["mood"])}
-"""
-
-    for oinfo in state["other_info"]:
-        preprompt += f"""
-# {oinfo["title"]}
-{oinfo["content"]}
-"""
-
-    return preprompt+"\n"
