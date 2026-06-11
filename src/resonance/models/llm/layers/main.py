@@ -115,6 +115,13 @@ The following moods define how you feel, use them as reference when generating y
             return self.memories.create_memories(context, data=self.data, ai_response=ai_response)
 
 
+        def get_memories_w_tags(self, tags: list):
+            return self.memories.get_memories_w_tags(tags)
+
+
+        def get_memories_w_date(self, date: str, date_type=0) -> list:
+            return self.get_memories_w_date(date, date_type)
+
 
         def memories_format(self, memories: list) -> str:
             str_memories = "# Memories\n"
