@@ -20,3 +20,13 @@ def get_context(data: dict, date="") -> list:
                 return [{"role": "system", "content": persona_format_prompt(identity_data["persona"])}]
 
     return []
+
+
+def change_system_prompt(file: str, data: dict, new_prompt: str):
+    context = get_context(data, date_time("date")) 
+    context[0] = {"role": "system", "content": new_prompt}
+
+    with open(file, 'w') as f:
+        f.write(json.dumps(context))
+
+    return 

@@ -31,6 +31,7 @@ class InternalState:
     def lock_emotion(self, emotion: str):
         if emotion in self.emotions and emotion not in self.emotions_locked:
             self.emotions_locked.append(emotion)
+            print(f"Emotion \"{emotion}\" locked!")
 
         return
 
@@ -38,8 +39,10 @@ class InternalState:
         if emotion in self.emotions:
             if emotion in self.emotions_locked:
                 print(f"\x1b[33mEmotion \"{emotion}\" locked, cannot modify!\x1b[0m")
+                return
             self.emotions[emotion] = value
-
+            return
+        print(f"Emotion \"{emotion}\" doesn't exist!")
         return
 
     def update_from_interaction(self, emotions={}):

@@ -1,16 +1,17 @@
 import os
 import json
-from ..generation.tools import generate_openrouter
-from ..... import env
+from ..generation.tools import generate_openrouter, generate_ollama
 from .....tools import sql
 
 
-db = env.database 
 
 class Memories:
 
+    def __init__(self, db: str):
+        self.db = db
+
     def get_memories_w_tags(self, tags: list):
-        if not os.path.isfile(db) or not tags:
+        if not os.path.isfile(self.db) or not tags:
             return []
 
     
@@ -25,7 +26,7 @@ class Memories:
         WHERE {conditions}
         """
     
-        return sql.EXEC("data.db", query, params)
+        return sql.EXEC("data.self.db", query, params)
 
     
     def get_memories_w_date(self, date: str, date_type=0) -> list:
@@ -48,19 +49,19 @@ class Memories:
                     """
          
             params = date
-            result = sql.EXEC(database=db, query=query, params=params)
+            result = sql.EXEC(database=self.db, query=query, params=params)
 
             return result
 
         except Exception:
-            print("Error with DB.")
+            print("Error with self.db.")
             return []
     
 
 #def get_memories(self) -> list:
 #    return []
 
-    def create_memories(self, context_target: str, ai_response="") -> bool:
+    def create_memories(self, context_target: str, data, ai_response="") -> bool:
         preprompt = """
         Your task is to produce a JSON that summarize what happened in the following conversation, just the pure raw JSON, without any backticks for presentation purposes, only the raw JSON, nothing more, nothing less. 
         The summary must be detailed.
@@ -87,35 +88,40 @@ class Memories:
         """
         context = [{"role":"user", "content": preprompt+context_target}]
         try: 
+            ai_response_dict = {}
             if ai_response == "":
-                ai_response = json.loads(generate_openrouter(context, "z-ai/glm-5"))
+                if data.get("layers").get("memories").get("provider") == "openrouter":
+                    ai_response_dict = json.loads(generate_openrouter(context, data.get("layers").get("memories").get("model")))
+                elif data.get("layers").get("memories").get("provider") == "ollama":
+                    ai_response_dict = json.loads(generate_ollama(context, data.get("layers").get("memories").get("model")))
             else:
-                ai_response = json.loads(ai_response)
+                ai_response_dict = json.loads(ai_response)
     
     
+            # Send to SQL
             with open("output.txt", 'w') as file:
                 file.write(json.dumps(ai_response))
     
-    
-            # Day Summary
+
+            ## Day Summary
             query = """
             INSERT INTO Day_Summary (date, summary)
             VALUES (?, ?)
             """
-            params = (ai_response["created_at"], ai_response["day_summary"])
+            params = (ai_response_dict["created_at"], ai_response_dict["day_summary"])
     
-            sql.EXEC(database=db, query=query, params=params, fetch=False)
+            sql.EXEC(database=self.db, query=query, params=params, fetch=False)
     
     
-            # Memory Cards
+            ## Memory Cards
             query = """
             INSERT INTO Memories (title, tags, entities, content, importance, created_at)
             VALUES (?, ?, ?, ?, ?, ?)
             """
     
-            for card in ai_response["memory_cards"]:
-                params = (card["title"], card["tags"], card["entities"], card["content"], card["importance"], ai_response["created_at"])
-                sql.EXEC(database=db, query=query, params=params, fetch=False)
+            for card in ai_response_dict["memory_cards"]:
+                params = (card["title"], card["tags"], card["entities"], card["content"], card["importance"], ai_response_dict["created_at"])
+                sql.EXEC(database=self.db, query=query, params=params, fetch=False)
     
     
             return True 

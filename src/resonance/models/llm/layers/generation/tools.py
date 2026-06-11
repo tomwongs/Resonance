@@ -71,7 +71,7 @@ def generate_openrouter(context: list, model) -> str:
     return result 
 
 
-def generate_ollama(context, model):
+def generate_ollama(context: list, model) -> str:
     stream = chat(
         model=model,
         messages=context,

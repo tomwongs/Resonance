@@ -98,24 +98,3 @@ The following moods define how you feel, use them as reference when generating y
 """
 
     return preprompt+"\n"
-
-
-
-def memories_format(memories: list) -> str:
-    str_memories = "# Memories\n"
-    empty = True
-
-    for memory in memories:
-        str_memories+=f"## Memory n.{memory[0]}\n**Title: {memory[1]}**\n**Created at {memory[6]}**\n**Importance: {memory[5]}**\n**Entities: {memory[3]}**\n{memory[4]}\n\n"
-        empty = False
-
-    if not empty:
-        return str_memories
-    return ""
-
-
-def memories_sentence_to_tags(sentence: str) -> list:
-    words = sentence.replace('\n', ' ').split(' ')
-    cleaned = [word.strip('.,!?;:~–-+[]()|@#$%^&*`<>').lower() for word in words]
-
-    return cleaned
