@@ -90,7 +90,7 @@ class Layers:
     class Memories:
         def __init__(self, data):
             self.data = data
-            self.memories = Mem(data.get("layers").get("memories").get("db"))
+            self.memories = Mem("memories.db")
 
         def create_memory_cards(self, context: str, data, ai_response=""):
             return self.memories.create_memories(context, data=self.data, ai_response=ai_response)
