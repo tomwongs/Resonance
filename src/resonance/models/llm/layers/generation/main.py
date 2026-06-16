@@ -22,6 +22,8 @@ class Generation:
         print('-'*10)
 
         system = ""
+        ai_output = ""
+        retries = 6
         
         if layers := self.data.get("layers"):
             if identity_data := layers.get("identity"):
@@ -49,7 +51,10 @@ class Generation:
 
         self.context.append({"role": "user", "content": prompt})
 
-        ai_output = generate_llm_output(self.context, self.data)
+        while ai_output == "" and retries != 0:
+            print("Generating output...")
+            ai_output = generate_llm_output(self.context, self.data)
+            retries-=1
 
         ai_json = jsontools.to_json(ai_output)
 
