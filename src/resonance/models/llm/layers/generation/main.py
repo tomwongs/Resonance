@@ -51,7 +51,7 @@ class Generation:
 
         self.context.append({"role": "user", "content": prompt})
 
-        while ai_output == "" and retries != 0:
+        while ai_output == "" and retries > 1:
             print("Generating output...")
             ai_output = generate_llm_output(self.context, self.data)
             retries-=1
@@ -66,7 +66,7 @@ class Generation:
         return ai_json
 
     def update_system_prompt(self):
-        self.context[0] = persona_format_prompt(self.data.get("layers").get("identity").get("persona"))
+        self.context[0] = {"role": "system", "content": persona_format_prompt(self.data.get("layers").get("identity").get("persona"))}
         with open(self.context_file, 'w') as file:
             file.write(json.dumps(self.context))
         return
