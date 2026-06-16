@@ -62,7 +62,7 @@ class Generation:
 
     def update_system_prompt(self):
         self.context[0] = persona_format_prompt(self.data.get("layers").get("identity").get("persona"))
-        with open(self.context_file) as file:
+        with open(self.context_file, 'w') as file:
             file.write(json.dumps(self.context))
         return
         

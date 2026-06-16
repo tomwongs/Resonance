@@ -22,4 +22,6 @@ class Resonance:
         def create_memories(self, day_context: str, ai_response=""):
             return self.ai["memories"].create_memories(day_context, self.data, ai_response)
 
-        #def fetch_memories(self, )
+
+        def update_system_prompt(self):
+            return self.generation.update_system_prompt()
