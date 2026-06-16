@@ -214,3 +214,16 @@ def day_summarizer(date: str, name: str):
     except:
         return None
 
+
+
+def remove_state_system_prompt(context: list):
+    
+    for i in range(len(context)-1, len(context)-4, -1):
+        print("Step")
+        if context[i].get("role") == "system":
+            if i == 0:
+                return
+            print("Found!")
+            return context.pop(i) 
+
+    return
