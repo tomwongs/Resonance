@@ -1,5 +1,4 @@
 from typing import Any
-import ast
 import json
 
 def to_json(string: str) -> dict[str, Any]:
@@ -14,7 +13,7 @@ def to_json(string: str) -> dict[str, Any]:
         string = " ".join(words)
 
     try:
-        result = ast.literal_eval(string)
+        result = json.loads(string)
         print("SUCCESS", result)
         return result
 

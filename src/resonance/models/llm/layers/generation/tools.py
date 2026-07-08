@@ -8,7 +8,7 @@ from .....apis import keys
 from ...prompt_builder import is_correct_llm_data
 
 
-def generate_openrouter(context: list, model) -> str:
+def generate_openrouter(context: list, model, response_format="") -> str:
     key = keys.openrouter_api
     #model = "anthropic/claude-opus-4.6"
     #model = "x-ai/grok-4.20"
@@ -25,8 +25,20 @@ def generate_openrouter(context: list, model) -> str:
     payload = {
             "model": model,
             "messages": context,
+            "reasoning": {
+                # One of the following (not both):
+                "effort": "high", # Can be "xhigh", "high", "medium", "low", "minimal" or "none" (OpenAI-style)
+                #"max_tokens": 2000, # Specific token limit (Anthropic-style)
+                # Optional: Default is false. All models support this.
+                "exclude": True, # Set to true to exclude reasoning tokens from response
+                # Or enable reasoning with the default parameters:
+                "enabled": True# Default: inferred from `effort` or `max_tokens`
+            },
             "stream": True
            }
+
+    if response_format:
+        payload["response_format"] = response_format
 
 
     response = requests.post(
@@ -155,7 +167,7 @@ def send_to_llava(image_url: str):
         ai_response = ""
     return ai_response
 
-def generate_llm_output(context: list, data={"provider":"", "model":""}) -> str:
+def generate_llm_output(context: list, data) -> str:
 
     if not is_correct_llm_data(data):
         error="""
@@ -163,10 +175,14 @@ def generate_llm_output(context: list, data={"provider":"", "model":""}) -> str:
 The setting(s) set for generating LLM output is/are incorrect!\x1b[0m
 """
 
+    response_format = ""
+    if data.get("response_format"):
+        response_format = data.get("response_format")
+
 
     match data['provider']:
         case "openrouter":
-            ai_output = generate_openrouter(context, data["model"])
+            ai_output = generate_openrouter(context, data["model"], response_format)
         case "ollama":
             ai_output = generate_ollama(context, data["model"])
 
@@ -204,7 +220,7 @@ def day_summarizer(date: str, name: str):
             content = file_r.read()
 
         context.append({"role":"user", "content": str(content)})
-        ai_response = generate_openrouter(context, "z-ai/glm-5.1")
+        ai_response = generate_openrouter(context, "z-ai/glm-5.2")
     
         with open(filename+".sum", 'w') as file_w:
             file_w.write(ai_response)
@@ -216,12 +232,13 @@ def day_summarizer(date: str, name: str):
 
 
 
-def remove_state_system_prompt(context: list):
+def remove_state_system_prompt(context: list[dict]):
     
     for i in range(len(context)-1, len(context)-4, -1):
         print("Step")
+        print(context[i])
         if context[i].get("role") == "system":
-            if i == 0:
+            if i <= 3:
                 return
             print("Found!")
             return context.pop(i) 
