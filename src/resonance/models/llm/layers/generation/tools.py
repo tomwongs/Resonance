@@ -7,20 +7,67 @@ import json
 from .....apis import keys
 from ...prompt_builder import is_correct_llm_data
 
+key = keys.openrouter_api
 
-def generate_openrouter(context: list, model, response_format="") -> str:
-    key = keys.openrouter_api
-    #model = "anthropic/claude-opus-4.6"
-    #model = "x-ai/grok-4.20"
-    #model = "anthropic/claude-3.5-haiku"
-    #model = "z-ai/glm-5.1"
-    #model = "z-ai/glm-4.6"
+def get_model_info(model_id: str):
+    response = requests.get(
+        "https://openrouter.ai/api/v1/models",
+        headers={"Authorization": f"Bearer {key}"}
+    )
+    response.raise_for_status()
+
+    models = response.json()["data"]
+    return next((m for m in models if m["id"] == model_id), None)
+
+
+def model_supports_images(model_id: str) -> bool:
+    info = get_model_info(model_id)
+    if info is None:
+        return False
+
+    return "image" in info.get("architecture", {}).get("input_modalities", [])
+
+
+
+def generate_openrouter(context: list, images=[], model="deepseek/deepseek-v3.2", response_format="") -> str:
     url = 'https://openrouter.ai/api/v1/chat/completions'
 
     headers = {
             "Authorization": f"Bearer {key}",
             "Content-Type": "application/json"
             }
+
+    if images:
+        if model_supports_images(model):
+            context[-1]["content"] = [
+                {
+                    "type": "text",
+                    "text": context[-1]["content"]
+                }
+            ]
+
+            for image_url in images:
+                image_template = {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": image_url
+                    }
+                }
+
+                context[-1]["content"].append(image_template)
+
+        else:
+            print("Doesn't support image visualization! Reading through another AI...")
+            images_prompt = ""
+            count = 1
+            for image in images:
+                print(image)
+                images_prompt += f"Image {count}:\n{send_to_llava(image)}\n\n"
+                count+=1
+
+            context[-1]["content"] = context[-1]["content"] + "\n\n" + images_prompt
+
+            
 
     payload = {
             "model": model,
@@ -83,6 +130,7 @@ def generate_openrouter(context: list, model, response_format="") -> str:
     return result 
 
 
+# HAVEN'T BEEN UPDATED IN A WHILE, DISREGARD.
 def generate_ollama(context: list, model) -> str:
     stream = chat(
         model=model,
@@ -125,18 +173,12 @@ def encode_image(url: str) -> str:
 
 def send_to_llava(image_url: str):
     key = keys.openrouter_api
-    model = "qwen/qwen3-vl-8b-instruct"
+    model = "openai/gpt-4.1"
+    #model = "qwen/qwen3-vl-8b-instruct"
     url = 'https://openrouter.ai/api/v1/chat/completions'
     prompt = """Describe the image with as much details as possible, your output are gonna be fed into another AI.
-    If there are people describe them as best as possible.
-    Analyze the image and respond ONLY in JSON:
-        {{
-            "scene": "...",
-            "objects": ["..."],
-            "actions": ["..."],
-            "important_elements": ["..."],
-            "description": ""
-        }}
+If there are people describe them as best as possible.
+If there are known personalities, characters, write their names directly with where they are referenced in.
     """
 
     headers = {
@@ -167,7 +209,7 @@ def send_to_llava(image_url: str):
         ai_response = ""
     return ai_response
 
-def generate_llm_output(context: list, data) -> str:
+def generate_llm_output(context: list, data, images=[]) -> str:
 
     if not is_correct_llm_data(data):
         error="""
@@ -182,7 +224,7 @@ The setting(s) set for generating LLM output is/are incorrect!\x1b[0m
 
     match data['provider']:
         case "openrouter":
-            ai_output = generate_openrouter(context, data["model"], response_format)
+            ai_output = generate_openrouter(context, images, data["model"], response_format)
         case "ollama":
             ai_output = generate_ollama(context, data["model"])
 
@@ -235,12 +277,9 @@ def day_summarizer(date: str, name: str):
 def remove_state_system_prompt(context: list[dict]):
     
     for i in range(len(context)-1, len(context)-4, -1):
-        print("Step")
-        print(context[i])
         if context[i].get("role") == "system":
             if i <= 3:
                 return
-            print("Found!")
             return context.pop(i) 
 
     return

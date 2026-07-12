@@ -14,11 +14,10 @@ class Generation:
         self.data = data
         self.context_file = f"context/{data['layers']['identity']['persona']['name']}/{date.date_time('date')}.context"
 
-    def generate_ai_response(self, prompt: str) -> dict[str, Any]:
-
-        print('-'*10)
+    def generate_ai_response(self, prompt: str, images=[]) -> dict[str, Any]:
+        print('------- PROMPT ------')
         print(prompt)
-        print('-'*10)
+        print('-'*20)
 
         system = ""
         ai_output = ""
@@ -52,7 +51,7 @@ class Generation:
 
         while ai_output == "" and retries > 1:
             print("Generating output...")
-            ai_output = generate_llm_output(self.context, self.data)
+            ai_output = generate_llm_output(context=self.context, images=images, data=self.data)
             retries-=1
 
         ai_json = json.loads(ai_output)

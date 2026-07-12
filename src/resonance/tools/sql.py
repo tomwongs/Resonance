@@ -12,7 +12,6 @@ import sqlite3
 #    return result
 
 def EXEC(database, query, params=None, fetch=True) -> list:
-    print("PARAMS:", params)
     try:
         with sqlite3.connect(database) as conn:
             cur = conn.cursor()

@@ -9,7 +9,6 @@ class Memories:
 
     def __init__(self, data: dict):
         self.db = data.get("layers").get("memories").get("db")
-        print("DB:", self.db)
 
     def get_memories_w_tags(self, tags: list):
         if not os.path.isfile(self.db) or not tags:

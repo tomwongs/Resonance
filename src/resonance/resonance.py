@@ -15,8 +15,8 @@ class Resonance:
             self.ai = {"identity": self.identity, "llm": self.generation, "memories": self.memories}
 
 
-        def generate(self, prompt: str):
-            return self.ai["llm"].generate(prompt)
+        def generate(self, prompt: str, images=[]):
+            return self.ai["llm"].generate(prompt, images)
 
 
         def create_memories(self, day_context: str, ai_response=""):
