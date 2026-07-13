@@ -15,7 +15,7 @@ class Generation:
         self.context_file = f"context/{data['layers']['identity']['persona']['name']}/{date.date_time('date')}.context"
 
     def generate_ai_response(self, prompt: str, images=[]) -> dict[str, Any]:
-        print('------- PROMPT ------')
+        print('\n------- PROMPT ------')
         print(prompt)
         print('-'*20)
 

@@ -93,7 +93,7 @@ class Memories:
             ai_response_dict = {}
             if ai_response == "":
                 if data.get("layers").get("memories").get("provider") == "openrouter":
-                    ai_response_dict = json.loads(generate_openrouter(context, data.get("layers").get("memories").get("model")))
+                    ai_response_dict = json.loads(generate_openrouter(context, model=data.get("layers").get("memories").get("model")))
                 elif data.get("layers").get("memories").get("provider") == "ollama":
                     ai_response_dict = json.loads(generate_ollama(context, data.get("layers").get("memories").get("model")))
             else:
