@@ -47,14 +47,14 @@ def generate_openrouter(context: list, images=[], model="deepseek/deepseek-v3.2"
             ]
 
             for image_url in images:
-                image_template = {
+                image_format = {
                     "type": "image_url",
                     "image_url": {
                         "url": image_url
                     }
                 }
 
-                context[-1]["content"].append(image_template)
+                context[-1]["content"].append(image_format)
 
         else:
             print("Doesn't support image visualization! Reading through another AI...")
@@ -64,6 +64,8 @@ def generate_openrouter(context: list, images=[], model="deepseek/deepseek-v3.2"
                 print(image)
                 images_prompt += f"Image {count}:\n{send_to_llava(image)}\n\n"
                 count+=1
+
+            print("Images Description\n",images_prompt)
 
             context[-1]["content"] = context[-1]["content"] + "\n\n" + images_prompt
 
@@ -126,6 +128,8 @@ def generate_openrouter(context: list, images=[], model="deepseek/deepseek-v3.2"
                         print(content, end='', flush=True)
                 except json.JSONDecodeError:
                     pass
+
+    print()
 
     return result 
 

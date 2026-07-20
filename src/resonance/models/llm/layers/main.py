@@ -92,13 +92,13 @@ The following moods define how you feel, use them as reference when generating y
             self.ai = ai
             self.data = data
             self.generation = Gen(ai, self.data)
+            self.context = self.generation.context
 
         def __str__(self):
             return self.data
 
         def generate(self, prompt, images=[]):
             return self.generation.generate_ai_response(prompt, images)
-
 
         def update_system_prompt(self):
             return self.generation.update_system_prompt()

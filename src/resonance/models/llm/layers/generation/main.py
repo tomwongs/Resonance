@@ -52,6 +52,7 @@ class Generation:
         while ai_output == "" and retries > 1:
             print("Generating output...")
             ai_output = generate_llm_output(context=self.context, images=images, data=self.data)
+            print("OUTPUT :", ai_output)
             retries-=1
 
         ai_json = json.loads(ai_output)

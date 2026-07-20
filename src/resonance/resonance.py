@@ -12,6 +12,7 @@ class Resonance:
             self.identity = Layers.Identity(data)
             self.memories = Layers.Memories(data)
             self.generation = Layers.Generation({"identity": self.identity, "memories": self.memories}, data)
+            self.context = self.generation.context
             self.ai = {"identity": self.identity, "llm": self.generation, "memories": self.memories}
 
 

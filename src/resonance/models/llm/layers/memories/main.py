@@ -70,6 +70,7 @@ class Memories:
         The importance parameter is an integer between 1 and 10.
         It is VERY important that if there's a relation between memories you concatenate the tags of the memories into BOTH memories.
         In the tags NEVER put '_' for spaces and NEVER put multiple words split them e.g. "life style", put "life, style"
+        End the summary in content with what was the last thing happening in the conversation, and the environment in deep details.
     
         Here's what your JSON must look like:
         {
